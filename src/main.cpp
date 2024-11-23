@@ -7,21 +7,11 @@
 #include <Arduino.h>
 #include <ERa.hpp>
 #include <ERa/ERaTimer.hpp>
-// #include <Wire.h>
-// #include <SPI.h>
-//  #include <Adafruit_GFX.h>
-// #include <Adafruit_SSD1306.h>
-
-//  #define SCREEN_WIDTH 128    // OLED display width, in pixels
-//  #define SCREEN_HEIGHT 64    // OLED display height, in pixels
-//  // Tạo đối tượng màn hình
-// Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-//  #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 
 int sensorPin = 34;
 const int RH = 19;
-const int RL = 18;
-const int RM = 5;
+const int RL = 5;
+const int RM = 18;
 const int Stop = 21;
 const int MAN_PIN = 26;  // Chân IO25 cho chế độ MAN
 const int AUTO_PIN = 25; // Chân IO26 cho chế độ AUTO
@@ -171,6 +161,7 @@ ERA_WRITE(V6)
 }
 ERaTimer timer;
 /* This function print uptime every second */
+
 void timerEvent()
 {
   ERa.virtualWrite(V0, v);
@@ -179,8 +170,9 @@ void timerEvent()
   ERa.virtualWrite(V7, chedo_man);
   ERa.virtualWrite(V8, chedo_auto);
 
-  // Serial.println("Online");
-  ERA_LOG("Timer", "Uptime: %d", ERaMillis() / 1000L);
+  //Serial.println("Online");
+  // ERA_LOG(ERA_PSTR("Timer"), ERA_PSTR("Uptime: %d"), ERaMillis() / 1000L);
+  ERA_LOG("Timer", "Uptime: %d", ERaMillis() / 1500L);
 }
 
 void setup()
@@ -201,30 +193,16 @@ void setup()
   digitalWrite(MAN_PIN, LOW);
   digitalWrite(AUTO_PIN, LOW);
 
-  // //Khởi tạo màn hình OLED
-
-  // display.clearDisplay();
-  // // Hiển thị text
-  // display.setTextSize(1);              // Cỡ chữ
-  // display.setTextColor(SSD1306_WHITE); // Màu chữ
-  // display.setCursor(0, 10);            // Vị trí bắt đầu vẽ
-  // display.println(F("Hello, ESP32!"));
-  // display.display(); // Cập nhật màn hình
-
-  // display.println("------------start_oled----------\n\r");
-  // delay(1000);
-
   ERa.begin(ssid, pass);
-
-  //  timer.setInterval(1000L, timerEvent);
+  timer.setInterval(1000L, timerEvent);
 }
 
 void loop()
 {
-  dokhoanhgcach_2();
   chedo();
+   //dokhoanhgcach_2();
   ERa.run();
-  /// timer.run();
+  timer.run();
 }
 void dokhoanhgcach_2(void)
 {
@@ -259,19 +237,21 @@ void dokhoanhgcach_2(void)
       }
 
       h = sum / 10.0;
-
+      delay(500);
       // Hiển thị kết quả
       Serial.print("Chiều cao trung bình: ");
       Serial.println(h);
     }
   }
 }
+
+
 void sosanh(void)
 {
   // Kiểm tra các khoảng giá trị của height
   if (h > -5 && h <= 25)
   {
-    Serial.println("RH");
+    //Serial.println("RH");
     digitalWrite(RH, HIGH);
     digitalWrite(RM, LOW);
     digitalWrite(RL, LOW);
@@ -279,23 +259,23 @@ void sosanh(void)
   }
   else if (h > 25 && h <= 50)
   {
-    Serial.println("RM");
+    //Serial.println("RM");
     digitalWrite(RM, HIGH);
     digitalWrite(RH, LOW);
     digitalWrite(RL, LOW);
     digitalWrite(Stop, LOW);
   }
-  else if (h > 50 && h <= 65)
+  else if (h > 50 && h <= 60)
   {
-    Serial.println("RL");
+    //Serial.println("RL");
     digitalWrite(RL, HIGH);
     digitalWrite(RH, LOW);
     digitalWrite(RM, LOW);
     digitalWrite(Stop, LOW);
   }
-  else if (h > 70)
+  else if (h > 60)
   {
-    Serial.println("Stop");
+    //Serial.println("Stop");
     digitalWrite(Stop, HIGH);
     digitalWrite(RH, LOW);
     digitalWrite(RM, LOW);
@@ -322,7 +302,7 @@ void chedo(void)
     // delay(2000);
     chedo_auto = 1;
     chedo_man = 0;
-    // bandau();
+   
   }
   else if (digitalRead(MAN_PIN) == HIGH && digitalRead(AUTO_PIN) == LOW)
   {
@@ -331,11 +311,11 @@ void chedo(void)
     // delay(2000);
     chedo_auto = 0;
     chedo_man = 1;
-    // bandau();
+   
   }
   else
   {
-    // Serial.println("Khong hoat dong o che do nao ca");
+     //Serial.println("Khong hoat dong o che do nao ca");
     // delay(2000);
     bandau();
     chedo_auto = 0;
@@ -343,7 +323,6 @@ void chedo(void)
     return;
   }
 }
-
 void bandau(void)
 {
 
@@ -352,11 +331,3 @@ void bandau(void)
   digitalWrite(RL, LOW);
   digitalWrite(Stop, LOW);
 }
-// void khung_oled()
-// {
-//   display.drawLine(0, 10, 128, 10, SSD1306_WHITE); //__ hang 1
-//   display.drawLine(0, 20, 128, 20, SSD1306_WHITE); //__ hang 2
-//   display.drawLine(0, 30, 128, 30, SSD1306_WHITE); //__ hang 3
-//   display.drawLine(0, 40, 128, 40, SSD1306_WHITE); //__ hang 4
-//   display.drawLine(34, 0, 34, 40, SSD1306_WHITE);  // |
-// }
